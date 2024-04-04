@@ -130,7 +130,7 @@ if st.button("Clear Results"):
     all_results = pd.DataFrame(columns=["Image", "Prediction"])
     all_results.to_csv("results.csv", index=False)
     st.success("Results cleared successfully!")
-    st.experimental_rerun()
+    st.stop()
 # Main content area
 if uploaded_file is not None:
 
