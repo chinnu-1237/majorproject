@@ -24,6 +24,11 @@ def predict_glaucoma(image, classifier):
     else:
         return "Normal"
 
+# Function to clear old results
+def clear_results():
+    if os.path.exists("results.csv"):
+        os.remove("results.csv")
+
 # Google Drive file ID
 file_id = '1lhBtxhP18L-KA7wDh4N72xTHZMLUZT82'
 
@@ -107,7 +112,7 @@ else:
     all_results = pd.read_csv("results.csv")
 
 # Sidebar for uploading image
-st.markdown("""<p style='font-size: 20px;  background-color: pink; color: black;'>Upload an image for glaucoma detection (Max size: 200 MB)</p>""", unsafe_allow_html=True)
+st.markdown("""<p style='font-size: 20px;  background-color: cyan; color: black;'>Upload an image for glaucoma detection (Max size: 200 MB)</p>""", unsafe_allow_html=True)
 st.empty()
 uploaded_file = st.file_uploader(" ",type=["png", "jpg", "jpeg"], accept_multiple_files=False, key="file_uploader", help="Upload an image for glaucoma detection (Max size: 200 MB)")
 st.markdown("""
@@ -122,10 +127,13 @@ st.markdown("""
 """, unsafe_allow_html=True)
 # Main content area
 if uploaded_file is not None:
+    # Clear old results if no image uploaded
+    clear_results()
+
     # Display uploaded image
     original_image = Image.open(uploaded_file)
-    st.image(original_image, caption="Uploaded Image", use_column_width=True)
-
+    st.image(original_image,  use_column_width=True)
+    st.markdown("<div style='background-color: white; text-align: center; padding: 5px'><strong>Uploaded Image</strong></div>", unsafe_allow_html=True)
     # Perform glaucoma detection
     with st.spinner("Detecting glaucoma..."):
         processed_image = preprocess_image(original_image)
@@ -138,20 +146,37 @@ if uploaded_file is not None:
         st.markdown("<p class='green-bg'>Your eyes are healthy.</p>", unsafe_allow_html=True)
 
     # Add new result to DataFrame
+
+    st.markdown(
+    f"""
+    <style>
+        .dataframe {{
+            background-color: white;
+            width: 100%; /* Set width to 100% */
+            table-layout: fixed;
+            padding: 10px; /* Add padding */
+        }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+   
     new_result = pd.DataFrame({"Image": [uploaded_file.name], "Prediction": [prediction]})
     all_results = pd.concat([new_result, all_results], ignore_index=True)
+    if not all_results.empty:
+      st.markdown("<h3  class='blue-bg' style='color: white;'>Detection Results</h3>", unsafe_allow_html=True)
+     
+      st.dataframe(all_results.style.applymap(lambda x: 'color: red' if x == 'Glaucoma' else 'color: green', subset=['Prediction']))
 
     # Save updated results to CSV
     all_results.to_csv("results.csv", index=False)
 
 # Display all results in table with black background color
-if not all_results.empty:
-    st.markdown("---")
-    st.subheader("Detection Results")
-    st.table(all_results.style.applymap(lambda x: 'color: red' if x == 'Glaucoma' else 'color: green', subset=['Prediction']))
+
 
     # Pie chart
-    st.markdown("<h3  class='blue-bg' style='color: white;'>Pie Chart</h3>", unsafe_allow_html=True)
+    st.markdown("<h3  style='color: white; background-color: blue'>Pie Chart</h3>", unsafe_allow_html=True)
     pie_data = all_results['Prediction'].value_counts()
     fig, ax = plt.subplots()
     colors = ['green' if label == 'Normal' else 'red' for label in pie_data.index]
@@ -160,7 +185,7 @@ if not all_results.empty:
     st.pyplot(fig)
 
     # Bar chart
-    st.markdown("<h3  class='blue-bg' style='color: white;'>Bar Chart</h3>", unsafe_allow_html=True)
+    st.markdown("<h3   style='color: white; background-color: blue'>Bar Chart</h3>", unsafe_allow_html=True)
     bar_data = all_results['Prediction'].value_counts()
     fig, ax = plt.subplots()
     colors = ['green' if label == 'Normal' else 'red' for label in bar_data.index]
@@ -170,7 +195,7 @@ if not all_results.empty:
     st.pyplot(fig)
 
     # Option to download prediction report
-    st.markdown("<h3  class='yellow-bg' style='color: black;'>Download Prediction Report</h3>", unsafe_allow_html=True)
+    st.markdown("<h3  class='blue-bg' style='color: white;'>Download Prediction Report</h3>", unsafe_allow_html=True)
     csv = all_results.to_csv(index=False)
     st.download_button(
         label="Download CSV",
@@ -179,4 +204,6 @@ if not all_results.empty:
         mime="text/csv"
     )
 else:
-    st.markdown("<p class='yellow-bg'>No images uploaded yet.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 20px;  background-color: cyan; color: black;'>No images uploaded yet.</p>", unsafe_allow_html=True)
+
+
