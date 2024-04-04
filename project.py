@@ -125,6 +125,11 @@ st.markdown("""
         }
     </style>
 """, unsafe_allow_html=True)
+
+if st.button("Clear Results"):
+    clear_results()
+    st.success("Results cleared successfully!")
+
 # Main content area
 if uploaded_file is not None:
     # Clear old results if no image uploaded
