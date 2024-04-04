@@ -127,13 +127,11 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 if st.button("Clear Results"):
-    clear_results()
+    all_results = pd.DataFrame(columns=["Image", "Prediction"])
+    all_results.to_csv("results.csv", index=False)
     st.success("Results cleared successfully!")
-
 # Main content area
 if uploaded_file is not None:
-    # Clear old results if no image uploaded
-    clear_results()
 
     # Display uploaded image
     original_image = Image.open(uploaded_file)
